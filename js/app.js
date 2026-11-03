@@ -93,7 +93,10 @@
     try {
       const toWorld = (p) => ({ x: (p.x - 50) * 0.78, z: (p.y - 50) * 0.78 });
       const spec = {
-        islands: ISLES.map((isle, i) => Object.assign({ id: isle.id, r: 7, accent: isle.accent, landmark: isle.id, keeperStyle: isle.keeperStyle, monsterColor: isle.monsterColor }, toWorld(pos(i)))),
+        islands: ISLES.map((isle, i) => Object.assign({ id: isle.id, r: 7, accent: isle.accent, landmark: isle.id, keeperStyle: isle.keeperStyle, monsterColor: isle.monsterColor,
+          // 小安是玩家的使用者：去問島過關後，她離開去問島，到給他用島等著試原型（Kevin 2026-11-03）
+          partnerStyle: isle.partner ? (ISLES.find(o => o.keeper.name === isle.partner.name) || {}).keeperStyle : null,
+          partnerFrom: isle.partner ? (ISLES.find(o => o.keeper.name === isle.partner.name) || {}).id : null }, toWorld(pos(i)))),
         center: Object.assign({ id: "center", r: 7.5, accent: C.center.accent, landmark: "center", keeperStyle: C.center.keeperStyle }, toWorld(pos("center"))),
         player: playerOf(),
         start: S.current || ISLES[0].id,
@@ -416,7 +419,7 @@
       if (!S.appliance && S.report) S.appliance = await AI.applianceOf(S.report);
       const r = isle.id === ISLES[0].id
         ? await AI.talkToXiaoAn(S.appliance, cv.chat, cv.revealed)
-        : await AI.talkToTester(S.appliance, answersText(ISLES[idx("build")]), cv.chat, cv.revealed);
+        : await AI.talkToTester(S.appliance, answersText(ISLES[idx("build")]), cv.chat, cv.revealed, conv(ISLES[0]).chat);
       cv.chat.push({ who: "her", text: r.reply || "嗯⋯" });
       const fresh = (r.revealed || []).filter(id => !cv.revealed.includes(id));
       fresh.forEach(id => cv.revealed.push(id));

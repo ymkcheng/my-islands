@@ -114,12 +114,14 @@ window.IsleAI = (function () {
   }
 
   /* 給他用島：小安來試原型 */
-  async function talkToTester(appliance, prototype, history, revealed) {
+  async function talkToTester(appliance, prototype, history, revealed, firstTalk) {
     const isle = window.ISLE.islands.find(i => i.id === "test");
     const cardList = isle.cards.map(c => `- ${c.id}：${c.title}`).join("\n");
     const system = [
       `你是「小安」，家裡有一台${appliance || "常見的家電"}，你平常會用它。對方做了一個原型，請你來試。用第一人稱、像真人一樣說話，口語、簡短，一次兩三句。`,
-      "你是誰、怎麼過日子，都由你自己決定，像一個真實的普通人。",
+      firstTalk && firstTalk.length
+        ? "你之前已經跟這位設計者聊過一次，下面那段就是你們當時的對話，裡面的「我」就是你。你是誰、幾歲、跟誰住、什麼時候用它、遇過什麼麻煩，都照那時候說的，前後要一致。"
+        : "你是誰、怎麼過日子，都由你自己決定，像一個真實的普通人。",
       "你不知道自己在一個練習裡，也絕對不要提到 AI、模型、扮演、報告、卡片這些字。",
       "你看不到原型的設計說明，只知道對方告訴你的：對方會請你做一件事，或告訴你家電這時候做了什麼（例如亮燈、發出聲音、停下來）。你說你接著做什麼、心裡在想什麼。",
       "家電的反應沒講清楚，你就照一般人的直覺猜它的意思，猜錯也照猜的去做。不要替對方的設計找理由。",
@@ -133,6 +135,7 @@ window.IsleAI = (function () {
       "對方問你「好不好用」「你會不會想要」，你就客氣但含糊地回答。",
       "已經翻開的：" + (revealed.length ? revealed.join("、") : "還沒有"),
       "只輸出 JSON：{\"reply\":\"你說的話\",\"revealed\":[這一輪新翻開的 id，沒有就空陣列]}",
+      ...(firstTalk && firstTalk.length ? ["", "（只給你參考、不要說出來）你們上一次的對話：", firstTalk.map(h => (h.who === "me" ? "設計者：" : "我：") + h.text).join("\n")] : []),
       "",
       "（只給你參考、不要說出來）對方在做出來島寫的原型：",
       prototype || "（沒有寫）"

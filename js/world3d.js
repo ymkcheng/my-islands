@@ -271,6 +271,13 @@ window.IsleWorld = (function () {
     keeper.position.set(r * 0.35, top, r * 0.2); keeper.rotation.y = toCenter; g.add(keeper);
     const keeperRing = ring(0xf2b866); keeperRing.position.set(r * 0.35, top + 0.02, r * 0.2); g.add(keeperRing);
 
+    // 小安：去問島過關之前站在去問島（她就是那裡的守門人），過關之後改站到給他用島的守門人旁邊
+    let partner = null;
+    if (spec.partnerStyle) {
+      partner = figure(spec.partnerStyle, 1.05);
+      partner.position.set(r * 0.35 + 1.4, top, r * 0.2 - 0.6); partner.rotation.y = toCenter; partner.visible = false; g.add(partner);
+    }
+
     let mon = null;
     if (spec.monsterColor) { mon = monster(spec.monsterColor); g.add(mon); }
 
@@ -284,7 +291,7 @@ window.IsleWorld = (function () {
     g.position.set(spec.x, 0, spec.z);
     g.traverse(o => { o.userData.isleId = spec.id; });
     scene.add(g);
-    isles[spec.id] = { group: g, mats, mon, lm, keeper, r, phase: seed * 1.7, top };
+    isles[spec.id] = { group: g, mats, mon, lm, keeper, partner, partnerFrom: spec.partnerFrom, r, phase: seed * 1.7, top };
   }
 
   function makeRoutes() {
@@ -533,6 +540,11 @@ window.IsleWorld = (function () {
       const locked = !!(v.locked && v.locked[id]);
       it.mats.forEach(({ m, base }) => m.color.copy(base).lerp(gray, locked ? 0.55 : 0));
       if (it.mon) it.mon.visible = !(v.passed && v.passed[id]);
+      if (it.partner && isles[it.partnerFrom]) {
+        const moved = !!(v.passed && v.passed[it.partnerFrom]);
+        it.partner.visible = moved;
+        isles[it.partnerFrom].keeper.visible = !moved;
+      }
       const lab = v.labels[id];
       it.label.innerHTML = `<span class="wl-num">${lab.num}</span><span class="wl-text"><b>${lab.title}</b><small>${lab.sub}</small></span>`;
       it.label.classList.toggle("locked", locked);
